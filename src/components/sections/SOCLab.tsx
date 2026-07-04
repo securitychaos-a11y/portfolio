@@ -6,87 +6,107 @@ import { FadeInOnScroll, TextReveal } from "@/components/ScrollEffects";
 
 const labTools = [
     {
+        name: "Windows Server (DC01)",
+        role: "Domain Controller",
+        description: "Active Directory Domain Services and DNS Server for the lab.local domain. Manages OUs (IT, HR), user accounts, and centralized authentication for all domain-joined endpoints.",
+        color: "from-blue-500/20 to-indigo-500/10",
+        borderColor: "border-blue-500/30",
+        status: "running",
+        version: "2022",
+        tags: ["Active Directory", "DNS", "lab.local", "OU Management"],
+    },
+    {
+        name: "Wazuh Server",
+        role: "Primary SIEM (All-in-One)",
+        description: "Deployed on Ubuntu Server VM. Runs Wazuh Manager, Indexer, and Dashboard as an all-in-one deployment. Receives agent data from the Windows 11 endpoint for rule-based threat detection.",
+        color: "from-cyan-500/20 to-teal-500/10",
+        borderColor: "border-cyan-500/30",
+        status: "running",
+        version: "4.x",
+        tags: ["Manager", "Indexer", "Dashboard", "Ubuntu Server"],
+    },
+    {
         name: "Splunk Enterprise",
-        role: "Primary SIEM",
-        description: "Centralized log indexing, SPL queries, custom dashboards, and real-time alerting for Windows and Linux events.",
+        role: "Secondary SIEM",
+        description: "Search Head and Indexer receiving forwarded logs from the Windows 11 endpoint via Splunk Universal Forwarder. Used for SPL queries, custom dashboards, and real-time alerting.",
         color: "from-orange-500/20 to-amber-500/10",
         borderColor: "border-orange-500/30",
         status: "running",
         version: "9.x",
-        tags: ["Log Indexing", "SPL", "Dashboards", "Alerts"],
-    },
-    {
-        name: "Wazuh",
-        role: "HIDS / SIEM",
-        description: "Deployed on Ubuntu Server VM. Collects Windows Security Events via agent, provides rule-based threat detection and FIM.",
-        color: "from-blue-500/20 to-cyan-500/10",
-        borderColor: "border-blue-500/30",
-        status: "running",
-        version: "4.14.x",
-        tags: ["HIDS", "FIM", "Rule Engine", "Ubuntu"],
-    },
-    {
-        name: "Kali Linux",
-        role: "Attacker Machine",
-        description: "VirtualBox VM configured as the red team node. Used for attack simulation, vulnerability scanning, and testing detection rules.",
-        color: "from-red-500/20 to-rose-500/10",
-        borderColor: "border-red-500/30",
-        status: "active",
-        version: "2024.x",
-        tags: ["Penetration Testing", "Nmap", "Attack Sim"],
+        tags: ["Search Head", "Indexer", "SPL", "Dashboards"],
     },
     {
         name: "Sysmon",
         role: "Endpoint Telemetry",
-        description: "Microsoft Sysinternals Sysmon installed on Windows 11 for rich process creation, network, and file telemetry beyond standard Event Logs.",
+        description: "Microsoft Sysinternals Sysmon installed on the Windows 11 endpoint. Generates deep telemetry — process creation, network connections, file changes, and registry modifications — beyond standard Event Logs.",
         color: "from-purple-500/20 to-violet-500/10",
         borderColor: "border-purple-500/30",
         status: "running",
-        version: "15.x",
-        tags: ["Process Logs", "Network Events", "Telemetry"],
+        version: "Latest",
+        tags: ["Process Logs", "Network Events", "File Monitoring", "Registry"],
     },
 ];
 
 const investigations = [
     {
-        id: "INV-001",
-        title: "Windows Authentication Investigation",
-        status: "completed",
-        severity: "medium",
-        events: "4624, 4625, 4634, 4740",
-        tools: ["Splunk", "Wazuh", "Sysmon"],
-        techniques: ["T1110 – Brute Force", "T1078 – Valid Accounts"],
-        summary: "Investigated failed login events, correlated with lockout alerts, and built a full authentication timeline.",
-    },
-    {
-        id: "INV-002",
-        title: "Multi-Platform SIEM Integration",
+        id: "CH-001",
+        title: "Building the SOC Lab Infrastructure",
         status: "completed",
         severity: "info",
-        events: "Log forwarding, agent config",
-        tools: ["Wazuh", "Splunk UF", "Kali Linux"],
-        techniques: ["Log Management", "SIEM Architecture"],
-        summary: "Deployed Splunk Universal Forwarder on Kali Linux, forwarding logs to Splunk Enterprise on Windows 11.",
+        events: "VM provisioning, AD DS, DNS, SIEM deployment",
+        tools: ["VMware", "Windows Server", "Wazuh", "Splunk"],
+        techniques: ["Infrastructure", "SIEM Architecture"],
+        summary: "Built the complete SOC lab from scratch — VMware VMs, Active Directory domain (lab.local), Wazuh All-in-One SIEM, Splunk Enterprise, Sysmon, and validated end-to-end log pipelines.",
     },
     {
-        id: "INV-003",
-        title: "File Integrity Monitoring (FIM)",
-        status: "in-progress",
+        id: "CH-002",
+        title: "Failed Login Detection",
+        status: "planned",
+        severity: "medium",
+        events: "4624, 4625, 4634, 4740",
+        tools: ["Splunk", "Wazuh", "Event Viewer"],
+        techniques: ["T1110 – Brute Force", "T1078 – Valid Accounts"],
+        summary: "Generate and investigate failed authentication events on the Windows 11 endpoint. Correlate Event IDs into a full authentication timeline.",
+    },
+    {
+        id: "CH-003",
+        title: "Sysmon & PowerShell Monitoring",
+        status: "planned",
         severity: "high",
-        events: "FIM alerts, file changes",
-        tools: ["Wazuh"],
-        techniques: ["T1565 – Data Manipulation"],
-        summary: "Configuring FIM rules in Wazuh to detect unauthorized modifications to critical system files.",
+        events: "Sysmon Event ID 1, 3, 11; Script Block Logging",
+        tools: ["Sysmon", "Splunk", "PowerShell"],
+        techniques: ["T1059 – Command Scripting", "T1218 – LOLBins"],
+        summary: "Monitor process creation, network connections, and PowerShell script block execution. Detect LOLBins and command-line obfuscation patterns.",
     },
     {
-        id: "INV-004",
-        title: "Network Intrusion Detection",
+        id: "CH-004",
+        title: "File Integrity Monitoring (FIM)",
+        status: "planned",
+        severity: "high",
+        events: "FIM alerts, file changes, registry modifications",
+        tools: ["Wazuh"],
+        techniques: ["T1565 – Data Manipulation", "T1547 – Boot/Logon Autostart"],
+        summary: "Configure Wazuh FIM rules to detect unauthorized modifications to critical system files and registry keys on the Windows endpoint.",
+    },
+    {
+        id: "CH-005",
+        title: "Threat Hunting",
         status: "planned",
         severity: "critical",
-        events: "Network traffic, IDS alerts",
-        tools: ["Suricata", "Zeek", "Wazuh"],
-        techniques: ["T1046 – Network Scanning"],
-        summary: "Planned integration of Suricata IDS to detect network-level threats from Kali Linux attack machine.",
+        events: "Hypothesis-driven queries across SIEM data",
+        tools: ["Splunk SPL", "Wazuh", "MITRE ATT&CK"],
+        techniques: ["T1046 – Network Scanning", "T1059 – Command Scripting"],
+        summary: "Proactive hypothesis-driven threat hunting using Splunk queries and Wazuh alerts. Map findings to the MITRE ATT&CK framework.",
+    },
+    {
+        id: "CH-006",
+        title: "Custom Wazuh Rules & Sigma",
+        status: "planned",
+        severity: "high",
+        events: "Custom detection rules, Sigma conversions",
+        tools: ["Wazuh", "Sigma", "Splunk"],
+        techniques: ["Detection Engineering", "SIEM-Agnostic Rules"],
+        summary: "Author custom Wazuh detection rules and write Sigma rules for SIEM-agnostic threat detection. Convert to Splunk SPL and Wazuh formats.",
     },
 ];
 
@@ -128,8 +148,8 @@ export default function SOCLab() {
                             <TextReveal text="SOC Home Lab" className="gradient-text" />
                         </h2>
                         <p className="mt-4 text-white/40 max-w-lg mx-auto">
-                            A fully operational Security Operations Center built at home —
-                            simulating real enterprise SOC workflows for threat detection, log analysis, and incident response.
+                            An enterprise-grade Security Operations Center built from scratch with VMware —
+                            simulating real SOC workflows for threat detection, log analysis, and incident response.
                         </p>
                     </div>
                 </FadeInOnScroll>
@@ -139,20 +159,20 @@ export default function SOCLab() {
                     <div className="glass-card p-6 md:p-8 mb-8 border border-white/8">
                         <div className="flex items-center gap-2 mb-6">
                             <div className="w-2 h-2 rounded-full bg-cyber-green animate-pulse" />
-                            <span className="text-xs font-mono text-white/40 uppercase tracking-widest">Lab Architecture — Live</span>
+                            <span className="text-xs font-mono text-white/40 uppercase tracking-widest">Lab Architecture — VMware Workstation Pro</span>
                         </div>
                         {/* Architecture nodes */}
                         <div className="relative">
-                            {/* Row 1: Windows Host (Center) */}
+                            {/* Row 1: Domain Controller (Center) */}
                             <div className="flex justify-center mb-4">
                                 <motion.div
                                     whileHover={{ scale: 1.02 }}
-                                    className="glass-card border border-white/10 px-6 py-4 text-center min-w-[200px] relative"
+                                    className="glass-card border border-blue-500/20 px-6 py-4 text-center min-w-[200px] relative"
                                 >
-                                    <p className="text-xs text-white/30 font-mono mb-1">HOST MACHINE</p>
-                                    <p className="font-heading font-bold text-white/90">Windows 11</p>
+                                    <p className="text-xs text-white/30 font-mono mb-1">DOMAIN CONTROLLER</p>
+                                    <p className="font-heading font-bold text-white/90">Windows Server (DC01)</p>
                                     <div className="flex flex-wrap gap-1.5 justify-center mt-2">
-                                        {["Splunk", "Sysmon", "Wazuh Agent"].map(t => (
+                                        {["Active Directory", "DNS", "lab.local"].map(t => (
                                             <span key={t} className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-white/50 border border-white/10">{t}</span>
                                         ))}
                                     </div>
@@ -167,7 +187,7 @@ export default function SOCLab() {
                                         transition={{ duration: 2, repeat: Infinity }}
                                         className="w-0.5 h-8 bg-gradient-to-b from-white/30 to-transparent"
                                     />
-                                    <span className="text-[9px] font-mono text-white/20">VirtualBox Network</span>
+                                    <span className="text-[9px] font-mono text-white/20">VMware Virtual Network</span>
                                     <motion.div
                                         animate={{ opacity: [0.3, 1, 0.3] }}
                                         transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
@@ -176,31 +196,64 @@ export default function SOCLab() {
                                 </div>
                             </div>
 
-                            {/* Row 2: VMs */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {/* Kali Linux */}
+                            {/* Row 2: Windows 11 Endpoint */}
+                            <div className="flex justify-center mb-4">
                                 <motion.div
                                     whileHover={{ scale: 1.02 }}
-                                    className="glass-card border border-red-500/20 px-5 py-4 text-center"
+                                    className="glass-card border border-purple-500/20 px-6 py-4 text-center min-w-[200px]"
                                 >
-                                    <p className="text-xs text-white/30 font-mono mb-1">ATTACKER VM</p>
-                                    <p className="font-heading font-bold text-white/90">Kali Linux</p>
+                                    <p className="text-xs text-white/30 font-mono mb-1">ENDPOINT</p>
+                                    <p className="font-heading font-bold text-white/90">Windows 11 (WIN11)</p>
                                     <div className="flex flex-wrap gap-1.5 justify-center mt-2">
-                                        {["Splunk UF", "Attack Tools", "VirtualBox"].map(t => (
+                                        {["Domain-Joined", "Sysmon", "Wazuh Agent", "Splunk UF"].map(t => (
+                                            <span key={t} className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-white/50 border border-white/10">{t}</span>
+                                        ))}
+                                    </div>
+                                </motion.div>
+                            </div>
+
+                            {/* Connector line */}
+                            <div className="flex justify-center mb-4">
+                                <div className="flex flex-col items-center gap-1">
+                                    <motion.div
+                                        animate={{ opacity: [0.3, 1, 0.3] }}
+                                        transition={{ duration: 2, repeat: Infinity, delay: 0.3 }}
+                                        className="w-0.5 h-6 bg-gradient-to-b from-white/20 to-transparent"
+                                    />
+                                    <span className="text-[9px] font-mono text-white/20">Log Forwarding</span>
+                                    <motion.div
+                                        animate={{ opacity: [0.3, 1, 0.3] }}
+                                        transition={{ duration: 2, repeat: Infinity, delay: 0.8 }}
+                                        className="w-0.5 h-4 bg-gradient-to-b from-transparent to-white/15"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Row 3: SIEMs */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {/* Wazuh Server */}
+                                <motion.div
+                                    whileHover={{ scale: 1.02 }}
+                                    className="glass-card border border-cyan-500/20 px-5 py-4 text-center"
+                                >
+                                    <p className="text-xs text-white/30 font-mono mb-1">PRIMARY SIEM</p>
+                                    <p className="font-heading font-bold text-white/90">Wazuh Server</p>
+                                    <div className="flex flex-wrap gap-1.5 justify-center mt-2">
+                                        {["Manager", "Indexer", "Dashboard", "Ubuntu"].map(t => (
                                             <span key={t} className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-white/45 border border-white/10">{t}</span>
                                         ))}
                                     </div>
                                 </motion.div>
 
-                                {/* Ubuntu/Wazuh Server */}
+                                {/* Splunk Enterprise */}
                                 <motion.div
                                     whileHover={{ scale: 1.02 }}
-                                    className="glass-card border border-blue-500/20 px-5 py-4 text-center"
+                                    className="glass-card border border-orange-500/20 px-5 py-4 text-center"
                                 >
-                                    <p className="text-xs text-white/30 font-mono mb-1">SIEM SERVER VM</p>
-                                    <p className="font-heading font-bold text-white/90">Ubuntu Server</p>
+                                    <p className="text-xs text-white/30 font-mono mb-1">SECONDARY SIEM</p>
+                                    <p className="font-heading font-bold text-white/90">Splunk Enterprise</p>
                                     <div className="flex flex-wrap gap-1.5 justify-center mt-2">
-                                        {["Wazuh Manager", "Wazuh Indexer", "Dashboard"].map(t => (
+                                        {["Search Head", "Indexer", "Receives UF Logs"].map(t => (
                                             <span key={t} className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-white/45 border border-white/10">{t}</span>
                                         ))}
                                     </div>
@@ -223,7 +276,7 @@ export default function SOCLab() {
                                         : "glass text-white/35 hover:text-white/60 border border-white/5"
                                 }`}
                             >
-                                {tab === "tools" ? "Lab Tools" : "Investigations"}
+                                {tab === "tools" ? "Lab Tools" : "Project Roadmap"}
                             </button>
                         ))}
                     </div>
@@ -350,9 +403,9 @@ export default function SOCLab() {
                             </span>
                         </div>
                         <div className="flex gap-6 text-xs font-mono text-white/30">
-                            <span>VMs: 2 running</span>
-                            <span>SIEMs: Splunk + Wazuh</span>
-                            <span>Platform: VirtualBox + VMware</span>
+                            <span>VMs: 4 running</span>
+                            <span>SIEMs: Wazuh + Splunk</span>
+                            <span>Platform: VMware Workstation Pro</span>
                         </div>
                     </div>
                 </FadeInOnScroll>
