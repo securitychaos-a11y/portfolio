@@ -1,0 +1,17 @@
+
+# Mission 0.4 – Verify Sysmon
+
+## Objective
+
+Verify that Sysmon is actively monitoring endpoint activity.
+
+## Verification Steps
+
+- Confirmed Sysmon service is running.
+- Opened Sysmon Operational log.
+- Generated a test event by launching Notepad.
+- Verified that Sysmon recorded the event.
+
+## Observation
+
+Sysmon successfully captured the creation of a new process, confirming that endpoint telemetry is being generated.
